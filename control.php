@@ -64,7 +64,7 @@ if (!empty($task)) {
 
 			echo "query: " . $query . "\n";
 
-			$queryResults = performSqlQuery($dbConnection, $sql);
+			$queryResults = performSqlQuery($dbConnection, $query);
 			echo "queryResults: " . $queryResults;
 		}
 	}
