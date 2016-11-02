@@ -46,7 +46,7 @@ if (!empty($task)) {
 	}
 	else if ($task == 'deviceInfo') {
 		// Create table if not exists
-		$query = "SELECT ID FROM DeviceID";
+		$query = "SELECT ID FROM DeviceInfo";
 		$result = mysqli_query($dbConnection, $query);
 
 		if(empty($result)) {
@@ -60,7 +60,7 @@ if (!empty($task)) {
 			$decodedData = base64_decode($deviceInfo);
 			$deviceInfo = json_decode($decodedData, true);
 
-			$query = "INSERT INTO DeviceInfo ('os', 'cpuArchitecture', 'installedApps', 'memory', 'time', 'date', 'deviceID') VALUES ('" . $deviceInfo["os"] . "', " . $deviceInfo["cpuArchitecture"] . ", '" . $deviceInfo["installedApps"] . "', '" . $deviceInfo["memory"] . "', '" . $deviceInfo["time"] . "', '" . $deviceInfo["date"] . "', '" . $deviceInfo["deviceID"] . "'')";
+			$query = "INSERT INTO DeviceInfo (os, cpuArchitecture, installedApps, memory, time, date, deviceID) VALUES ('" . $deviceInfo["os"] . "', " . $deviceInfo["cpuArchitecture"] . ", '" . $deviceInfo["installedApps"] . "', '" . $deviceInfo["memory"] . "', '" . $deviceInfo["time"] . "', '" . $deviceInfo["date"] . "', '" . $deviceInfo["deviceID"] . "')";
 
 			echo "query: " . $query . "\n";
 
@@ -79,11 +79,6 @@ if (!empty($task)) {
 	}
 
 	mysqli_close($dbConnection); // Close connection to DB
-}
-
-function walk($val, $key, &$new_array){
-	$nums = explode('-',$val);
-    $new_array[$nums[0]] = $nums[1];
 }
 
 function performSqlQuery($dbConnection, $sqlQuery) {
