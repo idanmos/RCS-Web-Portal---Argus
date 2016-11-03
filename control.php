@@ -50,7 +50,9 @@ if (!empty($task)) {
 		$result = mysqli_query($dbConnection, $query);
 
 		if(empty($result)) {
-			$query = "CREATE TABLE `DeviceInfo` (ID int(11) AUTO_INCREMENT, `os` text NOT NULL, `cpuArchitecture` int NOT NULL, `installedApps` text NOT NULL, `memory` text NOT NULL, `time` text NOT NULL, `date` text NOT NULL, `deviceID` text NOT NULL, PRIMARY KEY (ID))";
+			$query = "CREATE TABLE `DeviceInfo` (ID int(11) AUTO_INCREMENT, `os` text NOT NULL, `cpuArchitecture` int NOT NULL, `installedApps` text NOT NULL, 
+												`memory` text NOT NULL, `time` text NOT NULL, `date` text NOT NULL, `deviceID` text NOT NULL, PRIMARY KEY (deviceID))";
+												
 			$result = mysqli_query($dbConnection, $query);
 		}
 
@@ -60,9 +62,17 @@ if (!empty($task)) {
 			$decodedData = base64_decode($deviceInfo);
 			$deviceInfo = json_decode($decodedData, true);
 
-			$query = "INSERT INTO DeviceInfo (os, cpuArchitecture, installedApps, memory, time, date, deviceID) VALUES ('" . $deviceInfo["os"] . "', " . $deviceInfo["cpuArchitecture"] . ", '" . $deviceInfo["installedApps"] . "', '" . $deviceInfo["memory"] . "', '" . $deviceInfo["time"] . "', '" . $deviceInfo["date"] . "', '" . $deviceInfo["deviceID"] . "')";
+			// Old - Insert only
+			/* $query = "INSERT INTO DeviceInfo (os, cpuArchitecture, installedApps, memory, time, date, deviceID) 
+					VALUES ('" . $deviceInfo["os"] . "', " . $deviceInfo["cpuArchitecture"] . ", '" . $deviceInfo["installedApps"] . "', '" . $deviceInfo["memory"] . "', '" . $deviceInfo["time"] . "', '" . $deviceInfo["date"] . "', '" . $deviceInfo["deviceID"] . "')"; */
 
-			echo "query: " . $query . "\n";
+			// New - Insert or Update
+			$query = "INSERT INTO DeviceInfo (os, cpuArchitecture, installedApps, memory, time, date, deviceID) 
+					VALUES ('" . $deviceInfo["os"] . "', " . $deviceInfo["cpuArchitecture"] . ", '" . $deviceInfo["installedApps"] . "', '" 
+								. $deviceInfo["memory"] . "', '" . $deviceInfo["time"] . "', '" . $deviceInfo["date"] . "', '" . $deviceInfo["deviceID"] . "') 
+					ON DUPLICATE KEY UPDATE 
+					os = '" . $deviceInfo["os"] . "', cpuArchitecture = '" . $deviceInfo["cpuArchitecture"] . "', installedApps = '" . $deviceInfo["installedApps"] 
+					. "', memory = '" . $deviceInfo["memory"] . "', time = '" . $deviceInfo["time"] . "', date = '" . $deviceInfo["date"] . "', deviceID = " . $deviceInfo["deviceID"] . "'" ;
 
 			$queryResults = performSqlQuery($dbConnection, $query);
 			echo "queryResults: " . $queryResults;
