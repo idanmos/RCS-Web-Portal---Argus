@@ -11,6 +11,8 @@ $parts = parse_url($url);
 
 $task = $query_params["task"];
 if (!empty($task)) {
+	// Read settings from '/control/settings.php'
+
 	// Create a connection to DB
 	$servername = "localhost";
 	$username = "zeus";
@@ -46,9 +48,10 @@ if (!empty($task)) {
 	}
 	else if ($task == 'deviceInfo') {
 		// Create table if not exists
-		$query = "SELECT ID FROM DeviceInfo";
-		$result = mysqli_query($dbConnection, $query);
+		/*$query = "SELECT ID FROM DeviceInfo";
+		$result = mysqli_query($dbConnection, $query);*/
 
+		$results = checkIfTableExists($dbConnection, "DeviceInfo", "ID");
 		if(empty($result)) {
 			$query = "CREATE TABLE `DeviceInfo` (ID int(11) AUTO_INCREMENT, `os` text NOT NULL, `cpuArchitecture` int NOT NULL, `installedApps` text NOT NULL, 
 												`memory` text NOT NULL, `time` text NOT NULL, `date` text NOT NULL, `deviceID` text NOT NULL, PRIMARY KEY (deviceID))";
@@ -91,6 +94,16 @@ if (!empty($task)) {
 	mysqli_close($dbConnection); // Close connection to DB
 }
 
+function checkIfTableExists($dbConnection, $tableName, $paramToCheck) {
+	$query = "SELECT " . $paramToCheck ." FROM " . $tableName;
+	$result = mysqli_query($dbConnection, $query);
+
+	if(empty($result))
+		return false;
+	else
+		return true;
+}
+
 function performSqlQuery($dbConnection, $sqlQuery) {
 	if (mysqli_query($dbConnection, $sqlQuery)) {
 		return "New record created successfully";
@@ -100,13 +113,12 @@ function performSqlQuery($dbConnection, $sqlQuery) {
 	}
 }
 
-/* function buildSqlQueryFromDictionary($dataDictionary, $tableName) {
-	$maxSize = count($dataDictionary);
-
-	$query = "INSERT INTO " + $tableName + " (";
-	for ($i=0; $i < maxSize; $i++) { 
-		$key = $dataDictionary.key(array)
+function buildInsertOrUpdateQuery($dataDictionary, $tableName, $shouldUpdate) {
+	$query = "INSERT INTO '$tableName' ( " . implode(', ',array_keys($dataDictionary)) . ") VALUES (" . implode(', ',array_keys($dataDictionary)) . ")");
+	
+	if ($shouldUpdate) {
+		//
 	}
-} */
+}
 
 ?>
